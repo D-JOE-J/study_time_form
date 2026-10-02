@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>勉強時間入力</title>
+
+  <script
+    charset="utf-8"
+    src="https://static.line-scdn.net/liff/edge/2/sdk.js">
+  </script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 24px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    .subject {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      box-sizing: border-box;
+      font-size: 18px;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background: #06c755;
+      color: white;
+    }
+
+    #total {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    #message {
+      margin-top: 16px;
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>今日の勉強時間</h1>
+
+  <div class="subject">
+    <label>国語</label>
+    <input type="number" id="japanese" min="0" value="0">
+  </div>
+
+  <div class="subject">
+    <label>数学</label>
+    <input type="number" id="math" min="0" value="0">
+  </div>
+
+  <div class="subject">
+    <label>英語</label>
+    <input type="number" id="english" min="0" value="0">
+  </div>
+
+  <div class="subject">
+    <label>理科</label>
+    <input type="number" id="science" min="0" value="0">
+  </div>
+
+  <div class="subject">
+    <label>社会</label>
+    <input type="number" id="social" min="0" value="0">
+  </div>
+
+  <div id="total">
+    合計：0分
+  </div>
+
+  <button id="submitButton">
+    記録する
+  </button>
+
+  <div id="message"></div>
+
+
+<script>
+
+const LIFF_ID = "ここにLIFF_IDを入れる";
+
+async function initializeLiff() {
+
+  try {
+
+    await liff.init({
+      liffId: LIFF_ID
+    });
+
+    if (!liff.isLoggedIn()) {
+
+      liff.login();
+
+      return;
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    document.getElementById("message").textContent =
+      "LIFFの初期化に失敗しました。";
+
+  }
+
+}
+
+
+const ids = [
+  "japanese",
+  "math",
+  "english",
+  "science",
+  "social"
+];
+
+
+function getValue(id) {
+
+  const value =
+    Number(document.getElementById(id).value);
+
+  return value || 0;
+
+}
+
+
+function updateTotal() {
+
+  const total =
+    ids.reduce((sum, id) => {
+      return sum + getValue(id);
+    }, 0);
+
+  document.getElementById("total").textContent =
+    `合計：${total}分`;
+
+}
+
+
+ids.forEach(id => {
+
+  document
+    .getElementById(id)
+    .addEventListener("input", updateTotal);
+
+});
+
+
+document
+  .getElementById("submitButton")
+  .addEventListener("click", async () => {
+
+    const japanese = getValue("japanese");
+    const math = getValue("math");
+    const english = getValue("english");
+    const science = getValue("science");
+    const social = getValue("social");
+
+    const total =
+      japanese +
+      math +
+      english +
+      science +
+      social;
+
+
+    const text =
+`【今日の勉強記録】
+
+国語：${japanese}分
+数学：${math}分
+英語：${english}分
+理科：${science}分
+社会：${social}分
+
+合計：${total}分`;
+
+
+    try {
+
+      await liff.sendMessages([
+        {
+          type: "text",
+          text: text
+        }
+      ]);
+
+
+      document.getElementById("message").style.color =
+        "green";
+
+      document.getElementById("message").textContent =
+        "記録しました。";
+
+
+      setTimeout(() => {
+
+        liff.closeWindow();
+
+      }, 700);
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      document.getElementById("message").textContent =
+        "送信できませんでした。LINEグループからフォームを開いてください。";
+
+    }
+
+  });
+
+
+initializeLiff();
+
+</script>
+
+</body>
+</html>
