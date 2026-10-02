@@ -210,7 +210,47 @@ document
 
 
     try {
+      const response = await fetch(
+        MAKE_WEBHOOK_URL,
+        {
+          method: "POST",
 
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+
+            date:
+              new Date().toLocaleDateString("ja-JP"),
+
+            japanese: japanese,
+
+            math: math,
+
+            english: english,
+
+            science: science,
+
+            social: social,
+
+            total: total
+
+          })
+        }
+      );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Makeへの保存に失敗しました"
+        );
+
+      }
+
+
+      
       await liff.sendMessages([
         {
           type: "text",
