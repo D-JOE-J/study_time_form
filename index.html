@@ -109,7 +109,9 @@
 
 const LIFF_ID = "2011827886-PDQ1Adja";
 
-const MAKE_WEBHOOK_URL = "https://hook.eu1.make.com/adbkyk3oit2u361s25r1gilthunjaucl"
+const MAKE_WEBHOOK_URL =
+  "https://hook.eu1.make.com/adbkyk3oit2u361s25r1gilthunjaucl";
+
 
 async function initializeLiff() {
 
@@ -122,8 +124,8 @@ async function initializeLiff() {
     if (!liff.isLoggedIn()) {
 
       liff.login();
-
       return;
+
     }
 
   } catch (error) {
@@ -197,6 +199,15 @@ document
       social;
 
 
+    // 今日の日付を YYYY-MM-DD 形式で作成
+    const now = new Date();
+
+    const date =
+      `${now.getFullYear()}-` +
+      `${String(now.getMonth() + 1).padStart(2, "0")}-` +
+      `${String(now.getDate()).padStart(2, "0")}`;
+
+
     const text =
 `【今日の勉強記録】
 
@@ -210,6 +221,8 @@ document
 
 
     try {
+
+      // Make Webhookへ送信
       const response = await fetch(
         MAKE_WEBHOOK_URL,
         {
@@ -221,13 +234,8 @@ document
 
           body: JSON.stringify({
 
-            const now = new Date();
+            date: date,
 
-            const date =
-            `${now.getFullYear()}-` +
-            `${String(now.getMonth() + 1).padStart(2, "0")}-` +
-            `${String(now.getDate()).padStart(2, "0")}`;
-          
             japanese: japanese,
 
             math: math,
@@ -241,6 +249,7 @@ document
             total: total
 
           })
+
         }
       );
 
@@ -254,7 +263,7 @@ document
       }
 
 
-      
+      // LINEグループへ投稿
       await liff.sendMessages([
         {
           type: "text",
@@ -281,8 +290,11 @@ document
 
       console.error(error);
 
+      document.getElementById("message").style.color =
+        "red";
+
       document.getElementById("message").textContent =
-        "送信できませんでした。LINEグループからフォームを開いてください。";
+        "記録に失敗しました。もう一度試してください。";
 
     }
 
